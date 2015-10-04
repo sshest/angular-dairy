@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en" ng-app="dairyApp">
+<head>
+  <meta charset="utf-8">
+  <title>Dairy application for angular</title>
+  <link rel="stylesheet" href="css/bootstrap.css">
+  <link rel="stylesheet" href="css/bootstrap-responsive.css">
+  <link rel="stylesheet" href="css/app.css">
+  <script src="bower_components/angular/angular.js"></script>
+  <script src="bower_components/angular-route/angular-route.js"></script>
+  <script src="bower_components/angular-resource/angular-resource.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/controllers.js"></script>
+  <!--<script src="js/filters.js"></script>-->
+  <script src="js/services.js"></script>
+  <script src="js/directives.js"></script>
+</head>
+<body>
+  <div class="navbar navbar-inverse">
+    <div class="navbar-inner">
+      <ul class="nav main-menu">
+        <li><a id="list" href="#/list">Список событий</a></li>
+        <li><a id="add" href="#/issue/new">Добавить новое событие</a></li>
+        <li><a id="onMap" href="#/places">Где я был</a></li>
+        <form class="navbar-search pull-right">
+          <input type="text" class="search-query" id="search" placeholder="Искать по названию">
+        </form>
+      </ul>
+    </div>
+  </div>
+  <div ng-view></div>
+
+  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+      <h3 id="myModalLabel">Удаление события</h3>
+    </div>
+    <div class="modal-body">
+      <p>Вы действительно хотите удалить запись об этом событии?</p>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" data-dismiss="modal" aria-hidden="true">Отменить</button>
+      <button class="btn btn-primary">Подтвердить удаление</button>
+    </div>
+  </div>
+</body>
+</html>
