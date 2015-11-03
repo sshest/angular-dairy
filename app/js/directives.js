@@ -1,4 +1,4 @@
-dairyApp.derective('dairyMap', function(){
+dairyApp.directive('dairyMap', function(){
 	return {
 		restrict:'E',
 		scope: {

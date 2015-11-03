@@ -4,11 +4,11 @@
             <h1 class="title-h"></h1>
         </div>
         <div class="row">
-            <form class="form-horizontal">
+            <form name="editForm" class="form-horizontal" ng-submit="editForm.$valid && addIssue(issue)" novalidate>
                 <div class="control-group">
                     <label class="control-label" for="issueTitle">Название события</label>
                     <div class="controls">
-                        <input type="text" name="issueTitle" id="issueTitle" ng-model="title" required>
+                        <input type="text" name="issueTitle" id="issueTitle" ng-model="issue.title" required>
                         <span class="help-inline"></span>
                     </div>
                 </div>
@@ -42,16 +42,16 @@
                                 </select></label>
                             </div>
                         </div>
-                        <iframe id="description" cols='80' rows='7'>{{issue.description}}</iframe>
+                        <iframe id="description" name="description" cols='80' rows='7'></iframe>
                         <span class="help-inline"></span>
-                        <input name="issueDescription" id="issueDescription" class="hidden" ng-model="description" required> 
+                        <input name="issueDescription" id="issueDescription" class="hidden" ng-bind="issue.description" required> 
                     </div>
                 </div>
 
                 <div class="control-group">
                     <label class="control-label" for="selectAttitude">Отношение к событию</label>
                     <div class="controls">
-                        <select id="selectAttitude" name="selectAttitude" size="1"> 
+                        <select id="selectAttitude" name="selectAttitude" size="1" ng-model="issue.attitude" required> 
                             <option value="positive">Положительное</option>
                             <option value="neutral">Нейтральное</option>
                             <option value="negative">Отрицательное</option>
@@ -62,7 +62,7 @@
                 <div class="control-group">
                     <label class="control-label" for="date">Дата</label>
                     <div class="controls">
-                        <input type="date" name="date" id="date" required>
+                        <input type="date" name="date" id="date" ng-model="issue.date" required>
                         <span class="help-inline"></span>
                     </div>
                 </div>
@@ -77,13 +77,15 @@
                     </div>
                     
                 </div>
-
+                
                 <div class="control-group">
                     <label class="control-label" for="map">Выбрать место на карте (по адресу или кликом по карте)</label>
                     <div class="controls">
-                        <input id="adress-input" type="text" placeholder="Введите адрес здесь" ng-model="coords">
-                        <div id='map'></div> 
-                        <input name="coords" id="markerCoords" type="hidden">
+                        <input id="adress-input" type="text" placeholder="Введите адрес здесь" ng-model="adress">
+                        <div id='map'>
+                            <map zoom="10" center="49.9945914, 36.2858248"></map>
+                        </div> 
+                        <input name="coords" id="markerCoords" type="hidden" ng-model="issue.coords">
                     </div>
                 </div>
 
