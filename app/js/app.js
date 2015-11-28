@@ -29,8 +29,8 @@ dairyApp.config(['$routeProvider',
         controller: 'IssueDetailCtrl'
       }).
       when('/places', {
-        templateUrl: 'map.html',
-        controller: 'IssueMapCtrl'
+        templateUrl: 'templates/map.html',
+        controller: 'IssuesMapCtrl'
       }).
       otherwise({
         redirectTo: '/list'

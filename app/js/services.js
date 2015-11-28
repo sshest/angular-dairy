@@ -41,23 +41,23 @@ dairyServices.factory('LocalStorage',
 
 		insert: function (issue) {
 			var deferred = $q.defer();
-
+			angular.copy(store._getFromLocalStorage(), store.issues);
 			store.issues.push(issue);
 
 			store._saveToLocalStorage(store.issues);
 			deferred.resolve(store.issues);
-
+			debugger;
 			return deferred.promise;
 		},
 
 		put: function (issue, index) {
 			var deferred = $q.defer();
-
+			angular.copy(store._getFromLocalStorage(), store.issues);
 			store.issues[index] = issue;
 
 			store._saveToLocalStorage(store.issues);
 			deferred.resolve(store.issues);
-
+			debugger;
 			return deferred.promise;
 		}
 	};
@@ -68,11 +68,10 @@ dairyServices.factory('SetMarker',
 	function() {
 		return function(scope, latLng) {
           var map = scope.map;
-          var marker, markers = map.markers //|| [];
-          //если карта уже содержит массив маркеров, то помещается первый в место события
+          var marker = map.marker;
+          //если карта уже содержит маркер, то он помещается в место события
           //таким образом не создается второго и т.д. маркера, мы лишь перемещаем единственный
-          if (markers.length > 0) {
-            marker = markers[0];
+          if (marker) {
             marker.setPosition(latLng);
             //иначе - создается новый маркер
           } else {
@@ -82,15 +81,15 @@ dairyServices.factory('SetMarker',
               draggable: true
             });
             
-            markers[0] = marker;
+            map.marker = marker;
           };
           //после этого карта центрируется по маркеру
           map.panTo(marker.position);
           function getMarkerCoords(latLng) {
-            scope.issue.coords = latLng;
-            debugger;
+            scope.issue.coords.A = latLng.lat();
+            scope.issue.coords.B = latLng.lng();
           };         
-          //записываем координаты маркера в скрытое поле ввода
+          //записываем координаты маркера в свойство модели
           getMarkerCoords(latLng);
           //добавляем как обработчик события перетаскивания маркера функцию getMarkerCoords
           //для сохранения новых координат маркера 
@@ -103,7 +102,6 @@ dairyServices.factory('SetMarker',
 dairyServices.factory('CoordsByAdress', ['SetMarker', 
 	function(setmarker){
 		return function (scope, event) {
-			debugger;
 			var request = event.target.value;
 			//поиск производится при длине введенной строки не менее 3 символов
 			if (request.length < 3) return;

@@ -2,12 +2,19 @@
 
 /* Controllers */
 
-var dairyControllers = angular.module('dairyControllers', ['ngMap']);
+var dairyControllers = angular.module('dairyControllers', ['ngMap', 'youtube']);
 
-dairyControllers.controller('IssueListCtrl', ['$scope', 'LocalStorage',
-  function($scope, store) {
-    $scope.issues = store.get();
-    $scope.orderProp = 'id';
+dairyControllers.controller('IssueListCtrl', ['$scope', '$location', 'LocalStorage',
+  function($scope, $location, store) {
+    $scope.sorting = {};
+    $scope.sorting.sortType = 'date';
+    $scope.sorting.sortReverse = false;
+
+    store.get().then(function(data){
+      $scope.issues = data;
+    });
+    
+    //$scope.orderProp = 'id';
     
     $scope.issueDelete = function(issue){
       $('#myModal').modal({
@@ -19,7 +26,9 @@ dairyControllers.controller('IssueListCtrl', ['$scope', 'LocalStorage',
       //при нажатии на кнопку с классом btn-primary в модальном окне
       //модель удаляется из хранилища
       $('#myModal').on('click', '.btn-primary', function(){
-        store.delete(issue);
+        store.delete(issue).then(function(data){
+          $scope.issues = data;
+        });
         //после этого модальное окно прячется
         $('#myModal').modal('hide');
       });
@@ -27,13 +36,67 @@ dairyControllers.controller('IssueListCtrl', ['$scope', 'LocalStorage',
     };
     
     $scope.issueEdit = function(issue) {
+      var index = $scope.issues.indexOf(issue);
+      //сгенерировать роут с индексом события
+      $location.path('/issue/' + index + '/edit');
 
     };
     
     $scope.showIssueDetails = function(issue){
-
+      var index = $scope.issues.indexOf(issue);
+      //сгенерировать роут с индексом события
+      $location.path('/issue/' + index);
     };
   }]);
+
+dairyControllers.controller('NewIssueCtrl', ['$scope', 'LocalStorage', '$location', 'SetMarker', 'CoordsByAdress', 
+    function($scope, store, $location, setMarker, coordsByAdress) {
+      $scope.issue = {
+        title: '',
+        description: '',
+        attitude: '',
+        date: '',
+        videoUrl: '',
+        coords:'' 
+      };
+      
+      var lat, lon;
+      //если есть возможность получить координаты текущего положения пользователя
+      //то используем их как центр карты
+      navigator.geolocation.getCurrentPosition(function(pos) {
+        lat = pos.coords.latitude;
+        lon = pos.coords.longitude;
+      });
+
+      $scope.$on('mapInitialized', function(evt, map) {
+        lat && lon && map.setCenter(new google.maps.LatLng(lat, lon));
+        $scope.map = map;
+        // добавляем разового слушателя клика по карте, который создаст
+        //в месте клика маркер
+        google.maps.event.addListenerOnce(map, 'click', function(event){
+          var latLng = event.latLng;
+          setMarker($scope, latLng);
+        });
+        //добавляем слушеталя поднятия клавиш в поисковой строке для поиска
+        //с помощью Goecoder
+        google.maps.event.addDomListener(document.getElementById("adress-input"), 'keyup', 
+          function(event) {
+            coordsByAdress($scope, event);
+          }
+        );
+      });
+      
+      $scope.showThumb = function() {
+        var urlId = $scope.issue.videoUrl.split('=')[1];
+        $scope.thmbUrl = 'https://img.youtube.com/vi/'+urlId+'/mqdefault.jpg';
+      };
+            
+      $scope.saveIssue = function(issue) {
+        store.insert(issue);
+        $location.path('/list');
+      };
+    }
+  ]);
 
 /*phonecatControllers.controller('PhoneDetailCtrl', ['$scope', '$routeParams', 'Phone',
   function($scope, $routeParams, Phone) {
@@ -46,135 +109,10 @@ dairyControllers.controller('IssueListCtrl', ['$scope', 'LocalStorage',
     };
   }]);
 */
-dairyControllers.controller('NewIssueCtrl', ['$scope', 'LocalStorage', 'SetMarker', 'CoordsByAdress', 
-    function($scope, store, setMarker, coordsByAdress) {
-      $scope.issue = {
-        title: '',
-        description: '',
-        attitude: '',
-        date: '',
-        videoUrl: '',
-        coords:'' 
-      };
-      var area = document.getElementById('description');
-      area.contentWindow.document.designMode = "On";
+dairyControllers.controller('EditIssueCtrl', ['$scope', '$routeParams', '$location', 'LocalStorage', 'SetMarker', 'CoordsByAdress', 
+    function($scope, $routeParams, $location, store, setMarker, coordsByAdress) {
       
-      var lat, lon, map;
-      //если есть возможность получить координаты текущего положения пользователя
-      //то используем их как центр карты
-      navigator.geolocation.getCurrentPosition(function(pos) {
-        lat = pos.coords.latitude;
-        lon = pos.coords.longitude;
-      });
-
-      $scope.$on('mapInitialized', function(evt, map) {
-        lat && lon && map.setCenter(new google.maps.LatLng(lat, lon));
-        $scope.map = map;
-        // добавляем слушателя клика по карте, который создаст
-        //в месте клика маркер
-        google.maps.event.addListenerOnce(map, 'click', function(event){
-          var latLng = event.latLng;
-          setMarker($scope, latLng);
-        });
-        //добавляем слушеталя поднятия клавиш в поисковой строке для поиска
-        //с помощью Goecoder
-        google.maps.event.addDomListener(document.getElementById("adress-input"), 'keyup', 
-          function(event) {
-            coordsByAdress($scope, event);
-          }
-        );
-      });
-
-      
-      $scope.toggleColorPalette = function(ev) {
-          var colpalette = document.getElementById("colpalette");
-            if(colpalette.className.indexOf('hidden') != -1) {
-            colpalette.className = colpalette.className.replace(/hidden/, '');
-            } else if (colpalette.className.length === 0) {
-              colpalette.className = 'hidden';
-              } else {
-                colpalette.className += ' hidden';
-              }
-          return false;
-      };
-      $scope.styleApply = function(ev) {
-        
-        var area = document.getElementById("description");
-        var target = ev.target||ev.srcElement;
-        if (target && target.name === 'i' || target.name === 'b' || target.name === 'u') {
-          area.contentWindow.document.execCommand(target.value, false, null);
-        }
-        if (ev.currentTarget && ev.currentTarget.id === 'colpalette'){
-          area.contentWindow.document.execCommand('ForeColor', false, target.value);
-        }
-      };
-
-      $scope.setFontSize = function(size) {
-        var area = document.getElementById("description");
-        area.contentWindow.document.execCommand('fontSize', false, size);
-      };
-
-      $scope.showThumb = function() {
-        var urlId = $scope.videoUrl.split('=')[1];
-        $scope.thmbUrl = 'https://img.youtube.com/vi/'+urlId+'/mqdefault.jpg';
-      };
-            
-      $scope.coordsByAddress = function(map, self) {
-          debugger;
-          return function(){
-            var ev = arguments[0];
-            //поиск производится при длине введенной строки не менее 3 символов
-            if (ev.target.value.length < 3) return;
-            var geocoder = new google.maps.Geocoder();
-            var geoRequest = {
-              address: self.ui.adress_input.val()
-            };
-            //отправляем запрос - если статус ответа - "ОК",
-            //тогда из ответа определяем координаты первого совпадения
-            //и запускаем метод установки на карту маркера
-            //в иных случаях можно выводить соответствующее информационное сообщение
-            geocoder.geocode(geoRequest, function(result, status) {
-              switch (status) {
-                case "OK": 
-                  var location = result[0].geometry.location;
-                  var data = {latLng:location, map:map};
-                  self.setMarker(data);
-                  break;
-                case 'ZERO_RESULTS':
-                  //рядом вывести надпись Адрес не найден
-                  break;
-                case 'UNKNOWN_ERROR':
-                  // рядом вывести надпись Ошибка сервера, попробуйте снова
-                  break;
-                default:
-                  //надпись - Невозможно выполнить запрос
-                  break;
-              };
-            });
-          };
-      };
-      $scope.saveIssue = function() {
-        $q("#issueDescription").val(area.contentWindow.document.body.innerHTML);
-        debugger;
-        store.insert(issue);
-      };
-    }
-  ]);
-
-dairyControllers.controller('EditIssueCtrl', ['$scope', 'LocalStorage', 'SetMarker', 'CoordsByAdress', 
-    function($scope, store, setMarker, coordsByAdress) {
-      $scope.issue = {
-        title: '',
-        description: '',
-        attitude: '',
-        date: '',
-        videoUrl: '',
-        coords:'' 
-      };
-      var area = document.getElementById('description');
-      area.contentWindow.document.designMode = "On";
-      
-      var lat, lon, map;
+      var lat, lon, map, latLng;
       //если есть возможность получить координаты текущего положения пользователя
       //то используем их как центр карты
       navigator.geolocation.getCurrentPosition(function(pos) {
@@ -186,11 +124,25 @@ dairyControllers.controller('EditIssueCtrl', ['$scope', 'LocalStorage', 'SetMark
         lat && lon && map.setCenter(new google.maps.LatLng(lat, lon));
         
         $scope.map = map;
-        // добавляем слушателя клика по карте, который создаст
-        //в месте клика маркер
-        google.maps.event.addListenerOnce(map, 'click', function(event){
-          var latLng = event.latLng;
-          setMarker($scope, latLng);
+        store.get().then(function(data){
+          $scope.issue = data[$routeParams.id];
+          $scope.issue.date = new Date($scope.issue.date);
+
+          $scope.showThumb();
+          //если модель хранит в себе координаты
+          //то добавляется маркер с этими координатами
+          //с помощью сервиса setMarker
+          if ($scope.issue.coords.A && $scope.issue.coords.B) {
+            latLng = new google.maps.LatLng($scope.issue.coords.A, $scope.issue.coords.B);
+            setMarker($scope, latLng);
+          } else {
+            // добавляем одиночный слушатель клика по карте, который создаст
+            //в месте клика маркер
+            google.maps.event.addListenerOnce(map, 'click', function(event){
+              var latLng = event.latLng;
+              setMarker($scope, latLng);
+            });
+          }
         });
         //добавляем слушеталя поднятия клавиш в поисковой строке для поиска
         //с помощью Goecoder
@@ -200,80 +152,100 @@ dairyControllers.controller('EditIssueCtrl', ['$scope', 'LocalStorage', 'SetMark
           }
         );
       });
-      $scope.addIssue = function(issue) {
-        //обеспечить сохранение собітия в локалсторедж
-        debugger;
-      };
       
-      $scope.toggleColorPalette = function(ev) {
-          var colpalette = document.getElementById("colpalette");
-            if(colpalette.className.indexOf('hidden') != -1) {
-            colpalette.className = colpalette.className.replace(/hidden/, '');
-            } else if (colpalette.className.length === 0) {
-              colpalette.className = 'hidden';
-              } else {
-                colpalette.className += ' hidden';
-              }
-          return false;
-      };
-      $scope.styleApply = function(ev) {
-        
-        var area = document.getElementById("description");
-        var target = ev.target||ev.srcElement;
-        if (target && target.name === 'i' || target.name === 'b' || target.name === 'u') {
-          area.contentWindow.document.execCommand(target.value, false, null);
-        }
-        if (ev.currentTarget && ev.currentTarget.id === 'colpalette'){
-          area.contentWindow.document.execCommand('ForeColor', false, target.value);
-        }
-      };
-
-      $scope.setFontSize = function(size) {
-        var area = document.getElementById("description");
-        area.contentWindow.document.execCommand('fontSize', false, size);
-      };
-
       $scope.showThumb = function() {
-        var urlId = $scope.videoUrl.split('=')[1];
+        var urlId = $scope.issue.videoUrl.split('=')[1];
         $scope.thmbUrl = 'https://img.youtube.com/vi/'+urlId+'/mqdefault.jpg';
       };
             
-      $scope.coordsByAddress = function(map, self) {
-          debugger;
-          return function(){
-            var ev = arguments[0];
-            //поиск производится при длине введенной строки не менее 3 символов
-            if (ev.target.value.length < 3) return;
-            var geocoder = new google.maps.Geocoder();
-            var geoRequest = {
-              address: self.ui.adress_input.val()
-            };
-            //отправляем запрос - если статус ответа - "ОК",
-            //тогда из ответа определяем координаты первого совпадения
-            //и запускаем метод установки на карту маркера
-            //в иных случаях можно выводить соответствующее информационное сообщение
-            geocoder.geocode(geoRequest, function(result, status) {
-              switch (status) {
-                case "OK": 
-                  var location = result[0].geometry.location;
-                  var data = {latLng:location, map:map};
-                  self.setMarker(data);
-                  break;
-                case 'ZERO_RESULTS':
-                  //рядом вывести надпись Адрес не найден
-                  break;
-                case 'UNKNOWN_ERROR':
-                  // рядом вывести надпись Ошибка сервера, попробуйте снова
-                  break;
-                default:
-                  //надпись - Невозможно выполнить запрос
-                  break;
-              };
-            });
-          };
-      };
-      $scope.saveIssue = function() {
-        store.insert(issue);
+      $scope.saveIssue = function(issue) {
+        var index = $routeParams.id;
+        store.put(issue, index);
+        store.get().then(function(data){
+          $scope.issues = data;
+          $location.path('/list');
+        });
+        
       };
     }
   ]);
+
+dairyControllers.controller('IssueDetailCtrl', ['$window', '$scope', '$routeParams', 'LocalStorage', 'youtubePlayerApi',  
+    function($window, $scope, $routeParams, store, YTApi) {
+      var lat, lon, latLng, player;
+      store.get().then(function(data){
+        $scope.issue = data[$routeParams.id];
+        $scope.video = {};
+        $scope.video.id = $scope.issue.videoUrl.split('=')[1];
+        if ($scope.video.id) $scope.video.present = true;
+        
+        $window.onYouTubeIframeAPIReady = function(){
+          YTApi.bindVideoPlayer('video');
+          YTApi.videoId = $scope.video.id;
+          player = YTApi.createPlayer();
+        };
+      
+        $scope.$on('mapInitialized', function(evt, map) {
+          
+          //если модель хранит в себе координаты
+          //то добавляется маркер с этими координатами
+          //с помощью сервиса setMarker
+          if ($scope.issue.coords.A && $scope.issue.coords.B) {
+            latLng = new google.maps.LatLng($scope.issue.coords.A, $scope.issue.coords.B);
+            var marker = new google.maps.Marker({
+                position: latLng,
+                map: map,                            
+                draggable: false
+            }); 
+          }  
+        });
+      });
+    }
+  ]);  
+  
+  dairyControllers.controller('IssuesMapCtrl', ['$scope', 'LocalStorage', '$location', 'SetMarker', 
+        function($scope, store, $location, setMarker) {
+
+            $scope.$on('mapInitialized', function(evt, map) {
+              var latlngbounds = new google.maps.LatLngBounds();
+              store.get().then(function(data){
+                angular.forEach(data, function(issue, index){
+                  if (issue.coords === '') return;
+                  var latLng = new google.maps.LatLng(issue.coords.A, issue.coords.B);
+                  var marker = new google.maps.Marker({
+                    position: latLng,
+                    map: map,                            
+                    draggable: false,
+                    issueId: index
+                  });
+                  var title = issue.issueTitle;
+                  //получаем новый экземпляр информ.окна API google maps
+                  var infowindow = new google.maps.InfoWindow({
+                      content: title
+                  });
+                  //обработчик клика на маркере, который триггерит событие "issue:show"
+                  //для показа содержавния определенной записи о событии
+                  google.maps.event.addListener(marker, 'click', function() {
+                      $location.path('/issue/' + index);
+                  });
+                  //обработчик наведения указателя мыши на маркер
+                  google.maps.event.addListener(marker, 'mouseover', function() {
+                      //показывает информационное окно - в окне выводится название события   
+                      infowindow.open(map, marker);
+                  });
+                  //обработчик события выхода указателя мыши с маркера
+                  google.maps.event.addListener(marker, 'mouseout', function() {
+                      //убирает информационное окно
+                      infowindow.close();
+                  });
+                  //при каждом добавлении маркера область latlngbounds расширяется
+                  //так, чтобы внутри ее содержался и данный маркер
+                  latlngbounds.extend(marker.position); 
+                })
+                //после отображения всех маркеров карта центруется по центру области latlngbounds
+                //ее масштаб меняется так, чтобы полностью отображать область с маркерами 
+                map.setCenter( latlngbounds.getCenter(), map.fitBounds(latlngbounds));
+                
+              });
+            });
+      }]);

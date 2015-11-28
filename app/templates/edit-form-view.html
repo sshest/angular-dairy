@@ -4,47 +4,19 @@
             <h1 class="title-h"></h1>
         </div>
         <div class="row">
-            <form name="editForm" class="form-horizontal" ng-submit="editForm.$valid && addIssue(issue)" novalidate>
+            <form name="editForm" class="form-horizontal" ng-submit="editForm.$valid && saveIssue(issue)" novalidate>
                 <div class="control-group">
                     <label class="control-label" for="issueTitle">Название события</label>
                     <div class="controls">
-                        <input type="text" name="issueTitle" id="issueTitle" ng-model="issue.title" required>
-                        <span class="help-inline"></span>
+                        <input type="text" name="issueTitle" id="issueTitle" ng-model="issue.title" required minlength="3">
+                        <span ng-show="editForm.issueTitle.$invalid" class="help-inline">Укажите название события (не менее 3 символов)</span>
                     </div>
                 </div>
                  <div class="control-group">
                     <label class="control-label" for="issueDescription">Описание</label>
                     <div class="controls">
-                        <div id='editorPalette'>
-                            <div class="palette-wrapper" ng-click="styleApply($event)">
-                                <label><input type="checkbox" name="i" value="italic" >Курсив</label>
-                                <label><input type="checkbox" name="b" value="bold">Жирный</label>
-                                <label><input type="checkbox" name="u" value="underline">Подчеркивание</label>|
-                            </div>
-                            <div class='palette-wrapper' id='colwrapper'>
-                                <label class="palette-label" ng-click="toggleColorPalette()">Цвет текста</label>
-                                <div id='colpalette' class='hidden' ng-click="styleApply($event)">
-                                    <label><input type='radio' name='color' value="red">Красный</label> 
-                                    <label><input type='radio' name='color' value="yellow">Желтый</label>
-                                    <label><input type='radio' name='color' value="green">Зеленый</label>
-                                    <label><input type='radio' name='color' value="blue">Синий</label>
-                                    <label><input type='radio' name='color' value="brown">Коричневый</label>
-                                    <label><input type='radio' name='color' value="black">Черный</label>
-                                </div>
-                                
-                            |</div>
-                            <div class="palette-wrapper">
-                                <label>Размер шрифта<select id='font-size' ng-model='fontSize' ng-change="setFontSize(fontSize)">
-                                    <option value='1'>10</option>
-                                    <option value='2'>12</option>
-                                    <option value='3' selected>14</option>
-                                    <option value='4'>16</option>
-                                </select></label>
-                            </div>
-                        </div>
-                        <iframe id="description" name="description" cols='80' rows='7'></iframe>
-                        <span class="help-inline"></span>
-                        <input name="issueDescription" id="issueDescription" class="hidden" ng-bind="issue.description" required> 
+                        <textarea name="issueDescription" id="issueDescription" ng-model="issue.description" required minlength="10"></textarea>
+                        <span ng-show="editForm.issueDescription.$invalid" class="help-inline">Описание не может быть короче 10 символов</span>
                     </div>
                 </div>
 
@@ -56,6 +28,7 @@
                             <option value="neutral">Нейтральное</option>
                             <option value="negative">Отрицательное</option>
                         </select>
+                        <span ng-show="editForm.selectAttitude.$invalid" class="help-inline">Укажите отношение к событию</span>
                     </div>
                 </div>
 
@@ -63,16 +36,15 @@
                     <label class="control-label" for="date">Дата</label>
                     <div class="controls">
                         <input type="date" name="date" id="date" ng-model="issue.date" required>
-                        <span class="help-inline"></span>
+                        <span ng-show="editForm.date.$invalid" class="help-inline">Выберите дату для события</span>
                     </div>
                 </div>
 
                 <div class="control-group">
                     <label class="control-label" for="videoUrl">Прикрепить YouTube-видео</label>          
                     <div class="controls">
-                        <input type="url" name="videoUrl" id="videoUrl" placeholder="Введите Url Youtube видео" ng-model="videoUrl" ng-change="showThumb()">
+                        <input type="url" name="videoUrl" id="videoUrl" placeholder="Введите Url Youtube видео" ng-model="issue.videoUrl" ng-change="showThumb()">
                         <span class="help-inline"></span>
-                        <div id='vPlayer'></div>
                         <div id='videoThumbnail'><img ng-src="{{thmbUrl}}" alt="Невозможно отобразить превью"></div>
                     </div>
                     
@@ -85,7 +57,6 @@
                         <div id='map'>
                             <map zoom="10" center="49.9945914, 36.2858248"></map>
                         </div> 
-                        <input name="coords" id="markerCoords" type="hidden" ng-model="issue.coords">
                     </div>
                 </div>
 
@@ -93,7 +64,7 @@
                     <div class="span4">
                         <div class="control-group">
                             <div class="controls">
-                                <button ng-submit="saveNewIssue" class="btn btn-info btn-block" href="#"><i class="fa fa-save" ></i>Сохранить событие</button> 
+                                <button type="submit" ng-disabled="editForm.$invalid" class="btn btn-info btn-block" href="#"><i class="fa fa-save" ></i>Сохранить событие</button> 
                             </div>
                         </div>
                     </div>

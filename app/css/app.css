@@ -1,4 +1,4 @@
-/*@import url(reset.css);*/
+    /*@import url(reset.css);*/
 @font-face {
     font-family: Asenine; /* Гарнитура шрифта */
     src: url(../fonts/ASENINE.ttf);
@@ -79,9 +79,12 @@ table tbody tr {
 	border-bottom: 3px solid #034769;
 }
 .controls>input,
-.controls>textarea,
-.controls>iframe {
+.controls>textarea{
   width: 418px;
+}
+.controls>textarea{
+  padding: 5;
+  min-height: 200px;
 }
 #lastLi{
   margin-left: 180px;
@@ -155,10 +158,11 @@ label>input[type="checkbox"]{
 .container.map{
   text-align: center;
 }
-#issueDescription{
-  padding: 0px 30px 5px;
-}
+
 .start{
   text-align: center;
   padding-top: 100px;
+}
+.row.ng-scope{
+  margin-left: 20px;
 }

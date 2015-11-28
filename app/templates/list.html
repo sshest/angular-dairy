@@ -6,12 +6,33 @@
     <table class="table table-hover table-striped">
         <thead>
             <tr>
-                <th>Дата</th><th>Название</th><th>Отношение</th><th></th>
+                <th>
+                    <a href="" ng-click="sorting.sortType = 'date'; sorting.sortReverse = !sorting.sortReverse">Дата 
+                       <span ng-show="sorting.sortType == 'date' && !sorting.sortReverse" class="fa fa-caret-down"></span>
+                       <span ng-show="sorting.sortType == 'date' && sorting.sortReverse" class="fa fa-caret-up"></span>
+                    </a>
+                </th>
+                <th>
+                    <a href="" ng-click="sorting.sortType = 'title'; sorting.sortReverse = !sorting.sortReverse">Название 
+                       <span ng-show="sorting.sortType == 'title' && !sorting.sortReverse" class="fa fa-caret-down"></span>
+                       <span ng-show="sorting.sortType == 'title' && sorting.sortReverse" class="fa fa-caret-up"></span>
+                    </a>
+                </th>
+                <th><a href="" ng-click="sorting.sortType = 'attitude'; sorting.sortReverse = !sorting.sortReverse">Отношение 
+                       <span ng-show="sorting.sortType == 'attitude' && !sorting.sortReverse" class="fa fa-caret-down"></span>
+                       <span ng-show="sorting.sortType == 'attitude' && sorting.sortReverse" class="fa fa-caret-up"></span>
+                    </a>
+                </th>
+                <th>
+                    <form class="navbar-search pull-right">
+                      <input type="text" class="search-query" id="search" placeholder="Искать по названию" ng-model="adSearch">
+                    </form>
+                </th>
             </tr>
-            <tr ng-repeat="issue in issues" ng-click='showIssueDetails(issue)'>
-                <td>{{issue.data}}</td>
-                <td>{{issue.title}}</td>
-                <td>{{issue.attitude}}</td>
+            <tr ng-repeat="issue in issues | orderBy:sorting.sortType:sorting.sortReverse | filter:adSearch">
+                <td ng-click='showIssueDetails(issue)'>{{issue.date | date:"MM/dd/yyyy"}}</td>
+                <td ng-click='showIssueDetails(issue)'>{{issue.title}}</td>
+                <td ng-click='showIssueDetails(issue)' ng-switch on='issue.attitude'><span ng-switch-when="positive">положительное</span><span ng-switch-when="neutral">нейтральное</span><span ng-switch-when="negative">отрицательное</span></td>
                 <td style="text-align:  center;">
                     <button class="btn btn-info edit" href="#"><i class="fa fa-edit" ng-click='issueEdit(issue)'></i></button>
                     <button class="btn btn-danger remove" href="#"><i class="fa fa-remove" ng-click='issueDelete(issue)'></i></button>

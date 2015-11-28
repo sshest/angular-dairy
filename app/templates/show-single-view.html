@@ -1,20 +1,24 @@
 <div class="row">
     <div class="span12">
         <div class="row w-title-h">
-            <h1 class="title-h"></h1>
+            <h1 class="title-h">{{issue.title}}</h1>
         </div>
         <div class="row">
             <div class="container">
-                <div id='issueDate'><%- date %></div>
+                <div id='issueDate'>{{issue.date | date}}</div>
             </div>
             <div class="container">
-                <div id='issueDescription'><%- description %></div>
+                <div id='issueDescription'>{{issue.description}}</div>
             </div>
-            <div class="container">
-                <div id='issueVideo'></div>
+            <div ng-if="video.present" class="container">
+                <div id="video"></div>
             </div>
-            <div class="container">
-                <div id='issuePlace'></div>
+            <div class="container" ng-show="marker.presence">
+                <div id='issuePlace'>
+                    <div id='map'>
+                        <map zoom="10" center="49.9945914, 36.2858248"></map>
+                    </div> 
+                </div>
             </div>
 
         </div>
